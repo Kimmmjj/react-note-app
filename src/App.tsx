@@ -1,21 +1,52 @@
 import React, { useState } from 'react';
-import NoteList from './components/NoteList';
+import Note from './components/Note';
+import './App.css';
 
 const App: React.FC = () => {
   const [notes, setNotes] = useState<string[]>([]);
+  const [inputValue, setInputValue] = useState<string>('');
 
-  const addNote = () => {
-    const newNote = prompt('Enter your note:');
-    if (newNote) {
-      setNotes([...notes, newNote]);
+  const handleAddNote = () => {
+    if (inputValue.trim() === '') return;
+    setNotes([...notes, inputValue]);
+    setInputValue('');
+  };
+
+  const handleDeleteNote = (index: number) => {
+    const updatedNotes = [...notes];
+    updatedNotes.splice(index, 1);
+    setNotes(updatedNotes);
+  };
+
+  const handleEditNote = (index: number) => {
+    const updatedNote = prompt('Enter the new note content:');
+    if (updatedNote !== null && updatedNote.trim() !== '') {
+      const updatedNotes = [...notes];
+      updatedNotes[index] = updatedNote;
+      setNotes(updatedNotes);
     }
   };
 
   return (
     <div>
-      <h1>My Note App</h1>
-      <button onClick={addNote}>Add Note</button>
-      <NoteList notes={notes} />
+      <h1>Note App</h1>
+      <input
+        type="text"
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+      />
+      <button onClick={handleAddNote}>생성</button>
+      <ul>
+        {notes.map((note, index) => (
+          <li key={index}>
+            <Note
+              content={note}
+              onDelete={() => handleDeleteNote(index)}
+              onEdit={() => handleEditNote(index)}
+            />
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
