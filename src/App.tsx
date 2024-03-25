@@ -1,54 +1,46 @@
-import React, { useState } from 'react';
-import Note from './components/Note';
-import './App.css';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { ToastContainer } from 'react-toastify'
+import './App.css'
+import { CreateNoteModal, TagsModal } from './components'
+import { useAppSelector } from './hooks/redux'
+import { Navbar, Sidebar } from './layout'
+import { AllNotes, ArchiveNotes, ErrorPage, TagNotes, TrashNotes } from './pages'
+import 'react-toastify/dist/ReactToastify.css'
 
-const App: React.FC = () => {
-  const [notes, setNotes] = useState<string[]>([]);
-  const [inputValue, setInputValue] = useState<string>('');
 
-  const handleAddNote = () => {
-    if (inputValue.trim() === '') return;
-    setNotes([...notes, inputValue]);
-    setInputValue('');
-  };
+function App() {
 
-  const handleDeleteNote = (index: number) => {
-    const updatedNotes = [...notes];
-    updatedNotes.splice(index, 1);
-    setNotes(updatedNotes);
-  };
-
-  const handleEditNote = (index: number) => {
-    const updatedNote = prompt('Enter the new note content:');
-    if (updatedNote !== null && updatedNote.trim() !== '') {
-      const updatedNotes = [...notes];
-      updatedNotes[index] = updatedNote;
-      setNotes(updatedNotes);
-    }
-  };
+  const { viewEditTagsModal, viewCreateNoteModal } = useAppSelector(state => state.modal);
 
   return (
-    <div>
-      <h1>Note App</h1>
-      <input
-        type="text"
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-      />
-      <button onClick={handleAddNote}>생성</button>
-      <ul>
-        {notes.map((note, index) => (
-          <li key={index}>
-            <Note
-              content={note}
-              onDelete={() => handleDeleteNote(index)}
-              onEdit={() => handleEditNote(index)}
-            />
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-};
+    <div className="app">
 
-export default App;
+      {viewCreateNoteModal && <CreateNoteModal />}
+      {viewEditTagsModal && <TagsModal type='edit' />}
+
+      <ToastContainer
+        position='bottom-right'
+        theme='light'
+        pauseOnHover
+        autoClose={1500}
+      />
+
+      <BrowserRouter>
+        <Sidebar />
+        <div className='app__container'>
+          <Navbar /> 
+          <Routes>
+            <Route path='/' element={<AllNotes />} />
+            <Route path='/archive' element={<ArchiveNotes />} />
+            <Route path='/trash' element={<TrashNotes />} />
+            <Route path='/tag/:name' element={<TagNotes />} />
+            <Route path='/404' element={<ErrorPage />} />
+            <Route path='/*' element={<Navigate to={"/404"} />} />
+          </Routes>
+        </div>
+      </BrowserRouter>
+    </div>
+  )
+}
+
+export default App
